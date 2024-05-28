@@ -1,0 +1,18 @@
+[build-system]
+
+[project]
+name = "Besiege"
+version = "0.0.1"
+authors = [
+  {name="K. Fleck", email="kfleck02@qub.ac.uk"},
+]
+description = ""
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: GNU General Public License v3.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/k-fleck-01/Besiege"
