@@ -4,86 +4,103 @@
     @brief Bremsstrahlung and gamma conversion cross sections for use with the
     convolution and deconvolution methods in the Spectrum class.
 """
+
+
 ###############################################################################
 ###############################################################################
-### Collection of values for N_A*\rho / A for common converter materials.
-### To get the material parameter as used in the functions below, multiply by
-### the converter thickness in cm.
-
-MATERIALS_TABLE = {"tungsten" : None,
-                   "bismuth" : None,
-                   "tantalum" : None,
-                   "lead" : None,
-                  }
-
-### TODO: Fix gamma conversion cross section function to use correct scaling
-def BHGammaConversion(mat_param: float, energy: float, omega: float) -> float:
+class Material:
+    """Simple class to hold the information needed to evaluate
+    cross sections. Thickness in cm, radiation length in g/cm^2 and density in
+    g/cm^3.
     """
-    Energy differential cross section for creation of electron/positron
-    pair in the field of a nucleus. Uses Klein's ultrarelativistic
-    approximation, valid within a few percent at 1 GeV.
 
-    Parameters
-    ----------
-    mat_param : float
-        Material parameter of the 
-    energy : float
-        Energy of outgoing electron/positron in GeV.
-    omega : float
-        Energy of incident photon in GeV.
+    AVOGADRO = 6.022e23
 
-    Returns
-    -------
-    float
+    def __init__(
+        self,
+        atomic_A: float,
+        rad_length: float,
+        density: float,
+        thickness: float | None = None,
+    ) -> None:
+        self.atomic_A = atomic_A
+        self.rad_length = rad_length
+        self.density = density
+        self.thickness = thickness
 
+    def set_thickness(self, thickness: float) -> None:
+        """Manually set the thickness."""
+        self.thickness = thickness
+
+    @property
+    def mat_coefficient(self) -> float:
+        """Calculate the material coefficient
+        $$ N_A \rho t / A $$
+        """
+        if self.thickness is not None:
+            param = self.thickness * self.density / self.atomic_A
+            return Material.AVOGADRO * param
+        else:
+            raise ValueError("Material thickness has not been specified.")
+
+    @property
+    def cross_section_factor(self) -> float:
+        """Calculate the scaling factor for cross sections
+        $$ A / X_0 / N_A $$.
+        """
+        return self.atomic_A / self.rad_length / Material.AVOGADRO
+
+
+### Set of common materials for conversion targets, uses default thickness.
+MATERIALS_TABLE = {
+    "tungsten": Material(atomic_A=74.0, rad_length=6.76, density=19.30),
+    "bismuth": Material(atomic_A=83.0, rad_length=6.29, density=9.747),
+    "tantalum": Material(atomic_A=73.0, rad_length=6.82, density=16.65),
+    "lead": Material(atomic_A=82.0, rad_length=6.37, density=11.35),
+}
+
+
+###############################################################################
+### Cross section functions
+###############################################################################
+def BHGammaConversion(energy: float, omega: float, targ: Material) -> float:
+    """Bethe-Heitler cross section for electron-positron production in the
+    nuclear field in units of cm^2. Assumes the ultrarelativistic complete
+    screening approximation.
     """
-    me = 0.511e-3 # GeV
-    if omega <= 2*me: return 0. 
-    
-    x = energy/omega
-    if (x < me/omega or x > 1.): 
-        return 0. 
-    else:
-        y = 1. - x
-        dsdE = 1. - (4./3.)*x*y
-        dsdE /= omega
-    
-    if dsdE < 0.0: 
+
+    me = 0.511e-3  # GeV
+    if omega <= 2 * me:
+        return 0.0
+
+    x = energy / omega
+    if x < me / omega or x > 1.0:
         return 0.0
     else:
-        return mat_param*dsdE
+        y = 1.0 - x
+        dsdE = 1.0 - (4.0 / 3.0) * x * y
+        dsdE /= omega
 
-###############################################################################
-### TODO: Fix bremsstrahlung cross section to use correct scaling
-def BHBremsstrahlung(mat_param: float, omega: float, energy: float) -> float:
-    """
-    Energy differential cross section for creation of a photon
-    in the field of a nucleus (bremsstrahlung). Uses Klein's ultrarelativistic
-    approximation, valid within a few percent at 1 GeV.
-
-    Parameters
-    ----------
-    mat_param : float
-        Material parameter (density*thickness/radiation length) of converter
-        material.
-    omega : float
-        Energy of emitted photon in GeV.
-    energy : float
-        Energy of incoming electron/positron in GeV.
-
-    Returns
-    -------
-    float
-
-    """
-    me = 0.511e-3 # GeV
-    
-    if energy <= 0. : return 0.
-    
-    y = omega/energy
-    if y > 1. :
-        return 0.
+    if dsdE < 0.0:
+        return 0.0
     else:
-        dsdk = 4./3. - 4.*y/3. + y*y
+        return dsdE * targ.cross_section_factor
+
+
+def BHBremsstrahlung(omega: float, energy: float, targ: Material) -> float:
+    """Bethe-Heitler cross section for bremsstrahlung in the
+    nuclear field in units of cm^2. Assumes the ultrarelativistic complete
+    screening approximation.
+    """
+    me = 0.511e-3  # GeV
+
+    if energy <= 0.0:
+        return 0.0
+
+    y = omega / energy
+    if y > 1.0:
+        return 0.0
+    else:
+        dsdk = 4.0 / 3.0 - 4.0 * y / 3.0 + y * y
         dsdk /= omega
-        return mat_param*dsdk
+        return dsdk * targ.cross_section_factor
