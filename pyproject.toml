@@ -16,3 +16,13 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/k-fleck-01/Besiege"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+  "tests"
+]
+pythonpath = "."
+
+[tool.mypy]
+plugins = "numpy.typing.mypy_plugin"

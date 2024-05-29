@@ -8,11 +8,12 @@
 from typing import Callable, Tuple
 
 import numpy as np
+import numpy.typing as npt
 import scipy.linalg as linalg
 import scipy.optimize as optimize
 import scipy.stats as stats
 
-
+arrayf64 = npt.NDArray[np.float64]
 ###############################################################################
 def kroenecker_delta(x: float, y: float) -> float:
     """Kroenecker delta (or discrete Dirace delta) function, equals
@@ -21,7 +22,7 @@ def kroenecker_delta(x: float, y: float) -> float:
     return 1.0 if x == y else 0.0
 
 
-def generate_trapz_kernel(func: Callable, xvalues: np.ndarray) -> np.ndarray:
+def generate_trapz_kernel(func: Callable, xvalues: arrayf64) -> arrayf64:
     r"""Discretise a Volterra integral kernel of the second kind using the
     trapezium rule and return as a square matrix. Assumes evenly spaced
     abscissae.
@@ -42,7 +43,7 @@ def generate_trapz_kernel(func: Callable, xvalues: np.ndarray) -> np.ndarray:
 
 
 def lagrangian(
-    params: list, matK: np.ndarray, data_vec: np.ndarray, pr_mean: np.ndarray
+    params: list[float], matK: arrayf64, data_vec: arrayf64, pr_mean: arrayf64
 ) -> float:
     r"""Minimising Lagrangian to estimate hyperparameters; defined as the the
     negative natural logarithm of the marginalised likelihood function,
@@ -53,7 +54,7 @@ def lagrangian(
     pBeta, pTheta = params  ### Hyperparameters
 
     ### Define B^-1 = \beta K K^T + \theta I
-    matB = (1.0 / pTheta) * matK @ matK.transpose() @ matK + (1.0 / pBeta) * matI
+    matB = (1.0 / pTheta) * matK @ matK.transpose() + (1.0 / pBeta) * matI
     matB_inv = linalg.inv(matB)
     detB = linalg.det(matB)
 
@@ -67,7 +68,7 @@ def lagrangian(
 
 
 def estimate_hparameters(
-    matK: np.ndarray, data_vec: np.ndarray, pr_mean: np.ndarray
+    matK: arrayf64, data_vec: arrayf64, pr_mean: arrayf64
 ) -> Tuple[float, float, float]:
     """Estimate the precision hyperparameters using the marginalised likelihood
     function by minimizing its negative natural logarithm.
@@ -92,8 +93,8 @@ def estimate_hparameters(
 
 
 def calculate_hpdi(
-    mean: np.ndarray, covar: np.ndarray, alpha: float
-) -> Tuple[np.ndarray, np.ndarray]:
+    mean: arrayf64, covar: arrayf64, alpha: float
+) -> Tuple[arrayf64, arrayf64]:
     """Calculate the highest posterior density interval (HPDI) for a multivariate
     normal distribution at the (1 - alpha) level.
     """
