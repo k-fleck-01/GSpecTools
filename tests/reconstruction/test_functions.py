@@ -8,7 +8,7 @@
 from pytest import approx
 import numpy as np
 
-from src.reconstruction.analysis_functions import *
+from reconstruction.analysis_functions import *
 
 def test_kronecker_delta():
     assert kroenecker_delta(-1.0, 1.0) == 0.0
@@ -54,3 +54,8 @@ def test_estimate_hp():
     estBeta, estTheta, _ = estimate_hparameters(matK, data_vec, pr_mean)
     gamma = 1.0/estBeta + 1.0/estTheta
     assert gamma == approx(1.0)
+
+###TODO: Implement test for calculate_hpdi
+def test_calculate_hpdi():
+    ...
+
