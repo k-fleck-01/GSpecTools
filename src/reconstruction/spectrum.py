@@ -10,7 +10,7 @@ from typing import Callable, Optional
 import numpy as np
 import matplotlib.pyplot as plt
 
-import analysis_functions as af
+import reconstruction.analysis_functions as af
 
 
 ###############################################################################
@@ -20,7 +20,7 @@ class Spectrum:
     def __init__(self, xbins: np.ndarray, yvals: np.ndarray, yerrs: np.ndarray) -> None:
         nedges = xbins.size
         nbins = nedges - 1
-        if yvals.size != nbins:
+        if yvals.size != nbins or yerrs.size != nbins:
             raise RuntimeError(
                 "Number of bins does not match number of specified values or errors."
             )
@@ -51,8 +51,8 @@ class Spectrum:
         self,
         ax: plt.Axes,
         show_errs: bool = False,
-        lbl: str = "",
-        fmt: Optional[str] = None,
+        xlabel: str = "", ylabel: str = "",
+        **kwargs
     ) -> None:
         """Plots the spectrum onto a specified Axes object. Shows the
         associated error if enabled (default off).
@@ -62,22 +62,18 @@ class Spectrum:
         yvals = self.bin_contents
         yerrs = self.bin_errors
 
-        # Plot histogram bars
-        if fmt is not None:
-            c = fmt[0]
-            if len(fmt) > 1:
-                ls = fmt[1]
-            else:
-                ls = "-"
-        else:
-            c = "k"
-            ls = "-"
+        patches = ax.stairs(yvals, xbins, **kwargs)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
 
-        ax.stairs(yvals, xbins, label=lbl, color=c, linestyle=ls)
-
-        # Plot errorbars
+        # Show error region
         if show_errs:
-            ax.errorbar(xcentres, yvals, yerrs, fmt=c + ".", markersize=0.5)
+            lower = yvals - yerrs
+            lower[lower < 0.0] = 0.0
+
+            upper = yvals + yerrs
+            ax.fill_between(xcentres, y1=lower, y2=upper,
+                            alpha=0.4, color=patches.get_edgecolor())
 
     def scale_to_match(self, other: "Spectrum") -> None:
         """Scale the contents of this spectrum to match the contents of
@@ -189,7 +185,6 @@ class Spectrum:
                 pr_mean = mean
 
         # Get HPD interval
-        err_low, err_high = af.calculate_hpdi(mean, covar, alpha)
-        err = np.array([err_low, err_high])
-        dSpectrum = Spectrum(self.bin_edges.copy(), mean, err)
+        error = af.calculate_hpdi(mean, covar, alpha)
+        dSpectrum = Spectrum(self.bin_edges.copy(), mean, error)
         return dSpectrum

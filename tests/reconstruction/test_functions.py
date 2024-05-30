@@ -7,6 +7,7 @@
 ###############################################################################
 from pytest import approx
 import numpy as np
+from scipy.stats import chi2
 
 from reconstruction.analysis_functions import *
 
@@ -55,7 +56,12 @@ def test_estimate_hp():
     gamma = 1.0/estBeta + 1.0/estTheta
     assert gamma == approx(1.0)
 
-###TODO: Implement test for calculate_hpdi
 def test_calculate_hpdi():
-    ...
+    ndim = 2
+    mean = np.ones(ndim)
+    covar = np.eye(ndim)
 
+    alpha = 0.5
+    error = calculate_hpdi(mean, covar, alpha)
+    err2 = np.dot(error, error)
+    assert err2 == approx(0.25*chi2(ndim).ppf(1.0 - alpha))

@@ -68,22 +68,16 @@ def BHGammaConversion(energy: float, omega: float, targ: Material) -> float:
     nuclear field in units of cm^2. Assumes the ultrarelativistic complete
     screening approximation.
     """
-
     me = 0.511e-3  # GeV
-    if omega <= 2 * me:
-        return 0.0
 
+    ### Below production threshold or unphysical lepton energy.
     x = energy / omega
-    if x < me / omega or x > 1.0:
+    if x < 2.0*me / omega or x > 1.0:
         return 0.0
     else:
         y = 1.0 - x
         dsdE = 1.0 - (4.0 / 3.0) * x * y
         dsdE /= omega
-
-    if dsdE < 0.0:
-        return 0.0
-    else:
         return dsdE * targ.cross_section_factor
 
 
@@ -92,8 +86,7 @@ def BHBremsstrahlung(omega: float, energy: float, targ: Material) -> float:
     nuclear field in units of cm^2. Assumes the ultrarelativistic complete
     screening approximation.
     """
-    me = 0.511e-3  # GeV
-
+    ### Below production threshold
     if energy <= 0.0:
         return 0.0
 

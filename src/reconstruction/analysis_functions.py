@@ -5,7 +5,7 @@
 """
 ###############################################################################
 ###############################################################################
-from typing import Callable, Tuple
+from typing import Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -69,7 +69,7 @@ def lagrangian(
 
 def estimate_hparameters(
     matK: arrayf64, data_vec: arrayf64, pr_mean: arrayf64
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     """Estimate the precision hyperparameters using the marginalised likelihood
     function by minimizing its negative natural logarithm.
     """
@@ -92,9 +92,7 @@ def estimate_hparameters(
     return (pBeta_est, pTheta_est, condition)
 
 
-def calculate_hpdi(
-    mean: arrayf64, covar: arrayf64, alpha: float
-) -> Tuple[arrayf64, arrayf64]:
+def calculate_hpdi(mean: arrayf64, covar: arrayf64, alpha: float) -> arrayf64:
     """Calculate the highest posterior density interval (HPDI) for a multivariate
     normal distribution at the (1 - alpha) level.
     """
@@ -104,14 +102,4 @@ def calculate_hpdi(
     crit_value = stats.chi2(ndim).ppf(1.0 - alpha)
     unit_vector = np.ones_like(mean) / np.sqrt(ndim)
     error = 0.5 * np.sqrt(crit_value) * (lower_mat @ unit_vector)
-
-    hpd_low = mean - error
-    hpd_high = mean + error
-
-    ### Negative error is meaningless
-    hpd_low[hpd_low < 0.0] = 0.0
-    hpd_high[hpd_high < 0.0] = 0.0
-
-    err_low = mean - hpd_low
-    err_high = hpd_high - mean
-    return (err_low, err_high)
+    return error
