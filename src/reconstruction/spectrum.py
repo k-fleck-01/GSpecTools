@@ -161,7 +161,7 @@ class Spectrum:
 
         # Estimate hyperparameters and calculate posterior mean and covariance
         # Iterate until convergence
-        ITERMAX = 10
+        ITERMAX = 1
         TOLERANCE = 1.0e-10
 
         # Defaults in case iteration fails

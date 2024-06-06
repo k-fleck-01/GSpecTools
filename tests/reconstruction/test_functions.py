@@ -9,7 +9,7 @@ from pytest import approx
 import numpy as np
 from scipy.stats import chi2
 
-from reconstruction.analysis_functions import *
+from besiege.reconstruction.analysis_functions import *
 
 def test_kronecker_delta():
     assert kroenecker_delta(-1.0, 1.0) == 0.0

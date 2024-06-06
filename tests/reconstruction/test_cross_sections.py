@@ -8,7 +8,7 @@
 import pytest
 from pytest import approx
 
-from reconstruction.cross_sections import *
+from besiege.reconstruction.cross_sections import *
 ###############################################################################
 def test_material():
     ### Testing default material
