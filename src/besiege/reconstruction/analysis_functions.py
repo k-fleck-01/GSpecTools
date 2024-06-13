@@ -69,15 +69,13 @@ def lagrangian(
 
 def estimate_hparameters(
     matK: arrayf64, data_vec: arrayf64, pr_mean: arrayf64
-) -> tuple[float, float, float]:
+) -> tuple[float, float]:
     """Estimate the precision hyperparameters using the marginalised likelihood
     function by minimizing its negative natural logarithm.
     """
     ### Add constraints that the hyperparameters must be > 0
     bnds = optimize.Bounds(1.0e-6, np.inf)
-
     knorm = linalg.norm(matK, ord=np.inf)
-    condition = np.linalg.cond(matK)
     matK /= knorm  ### Divide matrix by its maximum norm for regularisation
 
     ### Estimating hyperparameters
@@ -89,7 +87,7 @@ def estimate_hparameters(
     ### Rescale matrix and theta hyperparameter
     pTheta_est *= knorm * knorm
     matK *= knorm
-    return (pBeta_est, pTheta_est, condition)
+    return (pBeta_est, pTheta_est)
 
 
 def calculate_hpdi(mean: arrayf64, covar: arrayf64, alpha: float) -> arrayf64:

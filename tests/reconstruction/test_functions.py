@@ -52,7 +52,7 @@ def test_estimate_hp():
     data_vec = np.ones(ndim)
     pr_mean = np.zeros(ndim)
 
-    estBeta, estTheta, _ = estimate_hparameters(matK, data_vec, pr_mean)
+    estBeta, estTheta = estimate_hparameters(matK, data_vec, pr_mean)
     gamma = 1.0/estBeta + 1.0/estTheta
     assert gamma == approx(1.0)
 

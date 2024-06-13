@@ -6,7 +6,7 @@
 """
 ###############################################################################
 ###############################################################################
-from typing import Callable, Optional
+from typing import Self, Callable, Optional
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -73,36 +73,42 @@ class Spectrum:
 
             upper = yvals + yerrs
             ax.fill_between(xcentres, y1=lower, y2=upper,
-                            alpha=0.4, color=patches.get_edgecolor())
+                            alpha=0.25, color=patches.get_edgecolor())
 
-    def scale_to_match(self, other: "Spectrum") -> None:
-        """Scale the contents of this spectrum to match the contents of
-        another spectrum using a linear least squares method.
+    def scale(self, other: float | Self) -> None:
+        """Scale the contents of this spectrum. If 'other' is a float, then
+        contents are scaled by a constant factor. If 'other' is a Spectrum,
+        then contents are scaled to match the contents of the other spectrum
+        using a linear least squares method.
 
             alpha_opt = <y_true, y_data>/<y_data, y_data>
 
         Parameters
         ----------
-        other : Spectrum
-            Spectrum to scale to match.
+        other : float | Spectrum
+            Float or Spectrum to scale by.
         """
+        if isinstance(other, float):
+            self.bin_contents *= other
+            self.bin_errors *= other
 
-        y_true = other.get_bin_contents()
-        y_data = self.get_bin_contents()
+        elif isinstance(other, Spectrum):
+            y_true = other.get_bin_contents()
+            y_data = self.get_bin_contents()
 
-        if y_data.size != y_true.size:
-            raise RuntimeError(
-                "Spectrum does not have the same number of bins as the other spectrum."
-            )
+            if y_data.size != y_true.size:
+                raise RuntimeError(
+                    "Spectrum does not have the same number of bins as the other spectrum."
+                )
 
-        if (y_data == 0.0).all():
-            print("Warning: spectrum does not have any non-zero values. Abort scaling.")
-            return
+            if (y_data == 0.0).all():
+                print("Warning: spectrum does not have any non-zero values. Abort scaling.")
+                return
 
-        alpha = np.dot(y_true, y_data) / np.dot(y_data, y_data)
+            alpha = np.dot(y_true, y_data) / np.dot(y_data, y_data)
 
-        self.bin_contents *= alpha
-        self.bin_errors *= alpha
+            self.bin_contents *= alpha
+            self.bin_errors *= alpha
 
     def convolve(self, func: Callable, fano: Optional[float] = None) -> "Spectrum":
         r"""Convolution of the Spectrum object with some function. Mathematically, this
@@ -169,7 +175,7 @@ class Spectrum:
         covar = np.diag(np.sqrt(pr_mean))
 
         for i in range(ITERMAX):
-            pBeta_est, pTheta_est, _ = af.estimate_hparameters(matK, yy, pr_mean)
+            pBeta_est, pTheta_est = af.estimate_hparameters(matK, yy, pr_mean)
 
             # Calculate MAP (mean) and covariance
             matA = pBeta_est * matK.transpose() @ matK + pTheta_est * np.eye(ndim)
@@ -186,5 +192,5 @@ class Spectrum:
 
         # Get HPD interval
         error = af.calculate_hpdi(mean, covar, alpha)
-        dSpectrum = Spectrum(self.bin_edges.copy(), mean, error)
+        dSpectrum = Spectrum(self.bin_edges.copy(), mean, np.abs(error))
         return dSpectrum

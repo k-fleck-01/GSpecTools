@@ -56,7 +56,7 @@ def test_visualise():
     assert ax.get_xlabel() == "x"
     assert ax.get_ylabel() == "y"
 
-def test_scale_to_match(capsys):
+def test_scale(capsys):
     nbins = 50
     basic_spectrum = Spectrum(np.linspace(0.0, 1.0, nbins+1),
                               np.ones(nbins),
@@ -66,7 +66,12 @@ def test_scale_to_match(capsys):
                               2.0 * np.ones(nbins),
                               np.zeros(nbins))
 
-    basic_spectrum.scale_to_match(other_spectrum)
+    ### Test scaling by a float
+    basic_spectrum.scale(0.5)
+    alpha = np.mean(basic_spectrum.get_bin_contents())
+    assert alpha == approx(0.5)
+
+    basic_spectrum.scale(other_spectrum)
     alpha = np.mean(basic_spectrum.get_bin_contents())
     assert alpha == approx(2.0)
 
@@ -75,7 +80,7 @@ def test_scale_to_match(capsys):
                               2.0 * np.ones(nbins+1),
                               np.zeros(nbins+1))
     with pytest.raises(RuntimeError):
-        basic_spectrum.scale_to_match(other_spectrum)
+        basic_spectrum.scale(other_spectrum)
 
     ### Test empty spectrum
     basic_spectrum = Spectrum(np.linspace(0.0, 1.0, nbins+1),
@@ -86,7 +91,7 @@ def test_scale_to_match(capsys):
                               2.0 * np.ones(nbins),
                               np.zeros(nbins))
 
-    basic_spectrum.scale_to_match(other_spectrum)
+    basic_spectrum.scale(other_spectrum)
     captured = capsys.readouterr()
     warn_str = "Warning: spectrum does not have any non-zero values. Abort scaling.\n"
     assert captured.out == warn_str 
