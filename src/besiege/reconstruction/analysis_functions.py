@@ -94,10 +94,12 @@ def calculate_hpdi(mean: arrayf64, covar: arrayf64, alpha: float) -> arrayf64:
     """Calculate the highest posterior density interval (HPDI) for a multivariate
     normal distribution at the (1 - alpha) level.
     """
-    lower_mat = linalg.cholesky(covar, lower=True)
+    ### Get half-width of HPDI for univariate standard normal distribution
+    tval = (1.0 - alpha) / 2.0 + stats.norm.cdf(0.0)
+    lmin = stats.norm.ppf(tval)
 
-    ndim = mean.size
-    crit_value = stats.chi2(ndim).ppf(1.0 - alpha)
-    unit_vector = np.ones_like(mean) / np.sqrt(ndim)
-    error = 0.5 * np.sqrt(crit_value) * (lower_mat @ unit_vector)
-    return error
+    ### Inverse transform from standard distribution
+    sigma = np.sqrt(np.diag(covar))
+    half_width = mean + lmin * sigma
+    return half_width
+        
