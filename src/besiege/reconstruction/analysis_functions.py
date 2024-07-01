@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy.linalg as linalg
 import scipy.optimize as optimize
-import scipy.stats as stats
+from scipy.special import gammainccinv
 
 arrayf64 = npt.NDArray[np.float64]
 ###############################################################################
@@ -94,12 +94,12 @@ def calculate_hpdi(mean: arrayf64, covar: arrayf64, alpha: float) -> arrayf64:
     """Calculate the highest posterior density interval (HPDI) for a multivariate
     normal distribution at the (1 - alpha) level.
     """
-    ### Get half-width of HPDI for univariate standard normal distribution
-    tval = (1.0 - alpha) / 2.0 + stats.norm.cdf(0.0)
-    lmin = stats.norm.ppf(tval)
+    ndim = mean.size
+    ### Get critical radius
+    crit_radius = np.sqrt( 2.0 * gammainccinv(ndim / 2.0, 1.0 - alpha) )
+    rad_uvec = np.ones_like(mean) / np.sqrt(ndim)
 
-    ### Inverse transform from standard distribution
-    sigma = np.sqrt(np.diag(covar))
-    half_width = mean + lmin * sigma
-    return half_width
-        
+    ### Calculate error
+    matL = linalg.cholesky(covar, lower=True)
+    error = crit_radius * matL @ rad_uvec
+    return error

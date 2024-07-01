@@ -192,5 +192,6 @@ class Spectrum:
 
         # Get HPD interval
         error = af.calculate_hpdi(mean, covar, alpha)
+        error[-1] = 0.0 ### Avoid numerical overestimation of error in last bin
         dSpectrum = Spectrum(self.bin_edges.copy(), mean, np.abs(error))
         return dSpectrum
