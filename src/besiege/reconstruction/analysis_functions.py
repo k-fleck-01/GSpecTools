@@ -96,7 +96,7 @@ def calculate_hpdi(mean: arrayf64, covar: arrayf64, alpha: float) -> arrayf64:
     """
     ndim = mean.size
     ### Get critical radius
-    crit_radius = np.sqrt( 2.0 * gammainccinv(ndim / 2.0, 1.0 - alpha) )
+    crit_radius = np.sqrt( 2.0 * gammainccinv(ndim / 2.0, alpha) )
     rad_uvec = np.ones_like(mean) / np.sqrt(ndim)
 
     ### Calculate error

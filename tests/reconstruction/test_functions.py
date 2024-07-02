@@ -57,11 +57,10 @@ def test_estimate_hp():
     assert gamma == approx(1.0)
 
 def test_calculate_hpdi():
-    ndim = 2
-    mean = np.ones(ndim)
+    ndim = 1
+    mean = np.zeros(ndim)
     covar = np.eye(ndim)
 
-    alpha = 0.5
+    alpha = 0.05
     error = calculate_hpdi(mean, covar, alpha)
-    err2 = np.dot(error, error)
-    assert err2 == approx(0.25*chi2(ndim).ppf(1.0 - alpha))
+    assert error == approx(np.array([1.959963985]))
