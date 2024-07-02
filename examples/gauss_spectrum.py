@@ -13,7 +13,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import besiege
+import gspectools
 ###############################################################################
 def gauss_spectrum(x, mu, sigma):
     """Defines a Gaussian spectrum of unit integral, with mean 'mu' and
@@ -32,17 +32,17 @@ if __name__ == '__main__':
     MU = 5.0; SIGMA = 1.2
     values = gauss_spectrum(energy, MU, SIGMA)
 
-    original_spectrum = besiege.spectrum.Spectrum(energy_bins,
+    original_spectrum = gspectools.spectrum.Spectrum(energy_bins,
                                                   values,
                                                   np.zeros(NBINS))
 
     ### Numerically generate an electron/positron spectrum using the
     ### Bethe-Heitler cross section. A noise factor of 0.2 is used.
-    target = besiege.cross_sections.MATERIALS_TABLE["tungsten"]
+    target = gspectools.cross_sections.MATERIALS_TABLE["tungsten"]
     target.set_thickness(100.0e-4) ### Define a 100um thick tungsten target
 
     def convolution_kernel(x, y):
-        csec = besiege.cross_sections.BHGammaConversion(x,y,target)
+        csec = gspectools.cross_sections.BHGammaConversion(x,y,target)
         return target.mat_coefficient * csec
 
     generated_spectrum = original_spectrum.convolve(convolution_kernel, fano=0.0)

@@ -9,7 +9,7 @@ import pytest
 from pytest import approx
 import numpy as np
 
-from besiege.reconstruction.spectrum import *
+from gspectools.reconstruction.spectrum import *
 ###############################################################################
 def test_spectrum_init():
     nbins = 50

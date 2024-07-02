@@ -3,12 +3,12 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "besiege"
+name = "gspectools"
 version = "0.0.1"
 authors = [
   {name="K. Fleck", email="kfleck02@qub.ac.uk"},
 ]
-description = "Bayesian methods for gamma spectroscopy"
+description = "Tools for Bayesian reconstruction of photon spectra."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -27,7 +27,7 @@ typing = ["mypy"]
 linting = ["black"]
 
 [project.urls]
-Homepage = "https://github.com/k-fleck-01/Besiege"
+Homepage = "https://github.com/k-fleck-01/GSpecTools"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
