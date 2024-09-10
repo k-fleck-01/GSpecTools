@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy.linalg as linalg
 import scipy.optimize as optimize
-from scipy.special import gammainccinv
+from scipy.special import gammaincinv
 
 arrayf64 = npt.NDArray[np.float64]
 ###############################################################################
@@ -96,7 +96,7 @@ def calculate_hpdi(mean: arrayf64, covar: arrayf64, alpha: float) -> arrayf64:
     """
     ndim = mean.size
     ### Get critical radius
-    crit_radius = np.sqrt( 2.0 * gammainccinv(ndim / 2.0, alpha) )
+    crit_radius = np.sqrt( 2.0 * gammaincinv(ndim / 2.0, alpha) )
     rad_uvec = np.ones_like(mean) / np.sqrt(ndim)
 
     ### Calculate error
